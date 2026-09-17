@@ -7,4 +7,7 @@ public interface IJobApplicationService
     Task<JobApplicationDto> UpdateStatusAsync(Guid companyProfileId, Guid applicationId, UpdateJobApplicationRequest request);
     Task <List<JobApplicationDto>> GetMyApplicationsAsync(Guid candidateProfileId);
     Task<List<JobApplicationDto>> GetByJobAsync( Guid companyProfileId, Guid jobId);
+    Task<JobApplicationDto> GetByIdAsync(
+        Guid companyProfileId,
+        Guid applicationId);
 }

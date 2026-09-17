@@ -85,6 +85,21 @@ public class JobApplicationService : IJobApplicationService
         return applications.Select(MapToDto).ToList();
     }
 
+    public async Task<JobApplicationDto> GetByIdAsync(
+        Guid companyProfileId,
+        Guid applicationId)
+    {
+        var application = await _context.JobApplications
+            .FirstOrDefaultAsync(item => item.Id == applicationId)
+            ?? throw new InvalidOperationException("Application not found.");
+
+        await EnsureJobBelongsToCompanyAsync(
+            companyProfileId,
+            application.JobListingId);
+
+        return MapToDto(application);
+    }
+
     public async Task<JobApplicationDto> UpdateStatusAsync(
         Guid companyProfileId,
         Guid applicationId,

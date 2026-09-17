@@ -86,6 +86,25 @@ public class JobApplicationController : ControllerBase
         }
     }
 
+    [HttpGet("{applicationId:guid}/internal")]
+    [Authorize(Roles = "Company")]
+    public async Task<IActionResult> GetForCompany(Guid applicationId)
+    {
+        try
+        {
+            var companyProfileId = await _companyService
+                .GetMyProfileIdAsync(GetAuthorizationHeader());
+
+            return Ok(await _jobApplicationService.GetByIdAsync(
+                companyProfileId,
+                applicationId));
+        }
+        catch (InvalidOperationException exception)
+        {
+            return NotFound(new { message = exception.Message });
+        }
+    }
+
     [HttpPatch("{applicationId:guid}/status")]
     [Authorize(Roles = "Company")]
     public async Task<IActionResult> UpdateStatus(
