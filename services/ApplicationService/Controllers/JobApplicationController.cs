@@ -1,0 +1,122 @@
+using ApplicationService.DTOs;
+using ApplicationService.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace ApplicationService.Controllers;
+
+[ApiController]
+[Route("api/job-applications")]
+[Authorize]
+public class JobApplicationController : ControllerBase
+{
+    private readonly IJobApplicationService _jobApplicationService;
+    private readonly ICandidateService _candidateService;
+    private readonly ICompanyService _companyService;
+
+    public JobApplicationController(
+        IJobApplicationService jobApplicationService,
+        ICandidateService candidateService,
+        ICompanyService companyService)
+    {
+        _jobApplicationService = jobApplicationService;
+        _candidateService = candidateService;
+        _companyService = companyService;
+    }
+
+    [HttpPost("jobs/{jobId:guid}")]
+    [Authorize(Roles = "Candidate")]
+    public async Task<IActionResult> Apply(
+        Guid jobId,
+        CreateJobApplicationRequest request)
+    {
+        try
+        {
+            var candidateProfileId = await _candidateService
+                .GetMyProfileIdAsync(GetAuthorizationHeader());
+
+            var application = await _jobApplicationService
+                .ApplyJobApplicationAsync(
+                    candidateProfileId,
+                    jobId,
+                    request);
+
+            return Ok(application);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
+    }
+
+    [HttpGet("my")]
+    [Authorize(Roles = "Candidate")]
+    public async Task<IActionResult> GetMyApplications()
+    {
+        try
+        {
+            var candidateProfileId = await _candidateService
+                .GetMyProfileIdAsync(GetAuthorizationHeader());
+
+            return Ok(await _jobApplicationService
+                .GetMyApplicationsAsync(candidateProfileId));
+        }
+        catch (InvalidOperationException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
+    }
+
+    [HttpGet("jobs/{jobId:guid}")]
+    [Authorize(Roles = "Company")]
+    public async Task<IActionResult> GetApplicationsForJob(Guid jobId)
+    {
+        try
+        {
+            var companyProfileId = await _companyService
+                .GetMyProfileIdAsync(GetAuthorizationHeader());
+
+            return Ok(await _jobApplicationService.GetByJobAsync(
+                companyProfileId,
+                jobId));
+        }
+        catch (InvalidOperationException exception)
+        {
+            return NotFound(new { message = exception.Message });
+        }
+    }
+
+    [HttpPatch("{applicationId:guid}/status")]
+    [Authorize(Roles = "Company")]
+    public async Task<IActionResult> UpdateStatus(
+        Guid applicationId,
+        UpdateJobApplicationRequest request)
+    {
+        try
+        {
+            var companyProfileId = await _companyService
+                .GetMyProfileIdAsync(GetAuthorizationHeader());
+
+            return Ok(await _jobApplicationService.UpdateStatusAsync(
+                companyProfileId,
+                applicationId,
+                request));
+        }
+        catch (InvalidOperationException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
+    }
+
+    private string GetAuthorizationHeader()
+    {
+        var authorizationHeader = Request.Headers.Authorization.ToString();
+
+        if (string.IsNullOrWhiteSpace(authorizationHeader))
+        {
+            throw new UnauthorizedAccessException("Missing authorization.");
+        }
+
+        return authorizationHeader;
+    }
+}
