@@ -112,6 +112,15 @@ public class CandidateService : ICandidateService
             return MapToDto(profile);
     }
 
+    public async Task<Guid?> GetUserIdByProfileIdAsync(
+        Guid candidateProfileId)
+    {
+        return await _context.CandidateProfiles
+            .Where(profile => profile.Id == candidateProfileId)
+            .Select(profile => (Guid?)profile.UserId)
+            .FirstOrDefaultAsync();
+    }
+
     public async Task<bool> RemoveEducationAsync(Guid userId, Guid educationId)
     {
         var profile = _context.CandidateProfiles.FirstOrDefault(p => p.UserId == userId) ?? throw new InvalidOperationException("Candidate profile not found.");

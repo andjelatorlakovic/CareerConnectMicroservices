@@ -22,6 +22,7 @@ public class JobListingController : ControllerBase
     }
     //Korisnici mogu da pogledaju oglase
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll(
         [FromQuery] string? location,
         [FromQuery] ExperienceLevel? experienceLevel,
@@ -36,6 +37,7 @@ public class JobListingController : ControllerBase
     }
     //Pronadji oglas po id-ju
     [HttpGet("{jobId}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetById(Guid jobId)
     {
         try

@@ -11,13 +11,22 @@ public class JobApplicationService : IJobApplicationService
 {
     private readonly ApplicationDbContext _context;
     private readonly ICompanyService _companyService;
+    private readonly ICandidateService _candidateService;
+    private readonly INotificationService _notificationService;
+    private readonly ILogger<JobApplicationService> _logger;
 
     public JobApplicationService(
         ApplicationDbContext context,
-        ICompanyService companyService)
+        ICompanyService companyService,
+        ICandidateService candidateService,
+        INotificationService notificationService,
+        ILogger<JobApplicationService> logger)
     {
         _context = context;
         _companyService = companyService;
+        _candidateService = candidateService;
+        _notificationService = notificationService;
+        _logger = logger;
     }
 
     public async Task<JobApplicationDto> ApplyJobApplicationAsync(
@@ -113,10 +122,42 @@ public class JobApplicationService : IJobApplicationService
             companyProfileId,
             application.JobListingId);
 
+        var previousStatus = application.Status;
         application.Status = request.Status;
         await _context.SaveChangesAsync();
 
+        if (previousStatus != application.Status)
+        {
+            await NotifyCandidateAboutStatusChangeAsync(application);
+        }
+
         return MapToDto(application);
+    }
+
+    private async Task NotifyCandidateAboutStatusChangeAsync(
+        JobApplication application)
+    {
+        try
+        {
+            var candidateUserId = await _candidateService
+                .GetUserIdByProfileIdAsync(application.CandidateProfileId);
+
+            await _notificationService.CreateAsync(
+                new Contracts.CreateNotificationRequest
+                {
+                    UserId = candidateUserId,
+                    JobListingId = application.JobListingId,
+                    Message =
+                        $"Your application status has been updated to {application.Status}."
+                });
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(
+                exception,
+                "The application status was updated, but the notification could not be sent for application {ApplicationId}.",
+                application.Id);
+        }
     }
 
     private async Task EnsureJobBelongsToCompanyAsync(

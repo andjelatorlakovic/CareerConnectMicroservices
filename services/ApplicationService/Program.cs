@@ -68,6 +68,16 @@ builder.Services.AddHttpClient<ICompanyService, CompanyService>(client =>
             "Company service URL is not configured."));
 });
 
+builder.Services.AddHttpClient<
+    INotificationService,
+    global::ApplicationService.Services.NotificationService>(client =>
+{
+    client.BaseAddress = new Uri(
+        builder.Configuration["ServiceUrls:NotificationService"]
+        ?? throw new InvalidOperationException(
+            "Notification service URL is not configured."));
+});
+
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException("JWT key is not configured.");
 

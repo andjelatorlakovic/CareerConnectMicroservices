@@ -44,6 +44,29 @@ public class CandidateController : ControllerBase
         }
         return Ok(profile);
     }
+
+    [HttpGet("{candidateProfileId:guid}/internal/user-id")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetUserIdForInternalService(
+        Guid candidateProfileId,
+        [FromHeader(Name = "X-Internal-Api-Key")] string? apiKey,
+        [FromServices] IConfiguration configuration)
+    {
+        var expectedApiKey = configuration["InternalApiKey"];
+
+        if (string.IsNullOrWhiteSpace(expectedApiKey) ||
+            !string.Equals(apiKey, expectedApiKey, StringComparison.Ordinal))
+        {
+            return Unauthorized();
+        }
+
+        var userId = await _candidateService.GetUserIdByProfileIdAsync(
+            candidateProfileId);
+
+        return userId.HasValue
+            ? Ok(new { userId = userId.Value })
+            : NotFound();
+    }
         
     [HttpPut]
     public async Task<IActionResult> Update(UpdateCandidateProfileRequest request)

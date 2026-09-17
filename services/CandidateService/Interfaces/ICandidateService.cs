@@ -4,6 +4,7 @@ namespace CandidateService.Interfaces;
 public interface ICandidateService
 {
     Task<CandidateProfileDto> GetOrCreateAsync(Guid userId);
+    Task<Guid?> GetUserIdByProfileIdAsync(Guid candidateProfileId);
     Task<CandidateProfileDto> UpdateCandidateProfileAsync(Guid userId, UpdateCandidateProfileRequest request);
     Task<WorkExperienceDto> AddWorkExperienceAsync(Guid userId, AddWorkExperienceRequest request);
     Task<bool> RemoveWorkExperienceAsync(Guid userId, Guid workExperienceId);
