@@ -1,0 +1,13 @@
+@layer theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities) important source(none);
+
+@source "./components/candidate";
+@source "./pages/candidate";
+@source "./components/shared";
+@source "./pages/shared";
+@source "./components/admin";
+@source "./pages/admin";
+@source "./components/company";
+@source "./pages/company";
