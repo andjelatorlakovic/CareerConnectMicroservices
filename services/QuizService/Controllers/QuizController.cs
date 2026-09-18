@@ -85,6 +85,28 @@ public class QuizController : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
     }
+
+    [HttpPost("applications/{applicationId:guid}/answers")]
+    [Authorize(Roles = "Candidate")]
+    public async Task<IActionResult> SubmitAnswers(
+        Guid applicationId,
+        List<SubmitAnswerRequest> answers)
+    {
+        try
+        {
+            await _quizService.SaveAnswersAsync(
+                applicationId,
+                answers,
+                GetAuthorizationHeader());
+
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
     private string GetAuthorizationHeader()
     {
         var authorizationHeader = Request.Headers.Authorization.ToString();

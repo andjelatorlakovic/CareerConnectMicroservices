@@ -115,6 +115,12 @@ public class JobService : IJobService
         job.SalaryMin=request.SalaryMin;
         job.SalaryMax= request.SalaryMax;
 
+        _context.JobSkills.RemoveRange(job.JobSkills);
+        job.JobSkills = request.Skills
+            .Distinct()
+            .Select(skill => new JobSkill { Skill = skill })
+            .ToList();
+
         await _context.SaveChangesAsync();
         await PublishJobListingsChangedAsync();
         return MapToDto(job);

@@ -118,10 +118,23 @@ public class QuizService : IQuizService
             applicationId,
             authorizationHeader);
 
+        var requiredQuestionIds = await _context.JobListingQuestions
+            .Where(question => question.JobListingId == application.JobListingId)
+            .Select(question => question.Id)
+            .ToListAsync();
+
         var requestedQuestionIds = answers
+            .Where(answer => !string.IsNullOrWhiteSpace(answer.Answer))
             .Select(answer => answer.QuestionId)
             .Distinct()
             .ToList();
+
+        if (requestedQuestionIds.Count != requiredQuestionIds.Count ||
+            requiredQuestionIds.Except(requestedQuestionIds).Any())
+        {
+            throw new InvalidOperationException(
+                "Please answer all company questions before submitting your application.");
+        }
 
         if (requestedQuestionIds.Count != answers.Count)
         {

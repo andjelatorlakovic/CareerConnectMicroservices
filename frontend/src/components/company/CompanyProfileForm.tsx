@@ -18,7 +18,7 @@ export default function CompanyProfileForm({
     name: initial.name,
     description: initial.description,
     location: initial.location,
-    website: initial.website,
+    website: initial.website ?? '',
     industry: initial.industry,
     contactEmail: initial.contactEmail,
     contactPhone: initial.contactPhone,
@@ -192,7 +192,7 @@ export default function CompanyProfileForm({
                   Website <span className="font-normal text-[#858592]">(optional)</span>
                   <input
                     type="url"
-                    value={form.website}
+                    value={form.website ?? ''}
                     onChange={(event) => setField('website', event.target.value)}
                     placeholder="https://example.com"
                     className={inputClassName}

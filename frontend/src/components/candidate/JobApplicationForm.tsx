@@ -33,11 +33,9 @@ export default function JobApplicationForm({
 
     await onSubmit({
       coverLetter: coverLetter.trim(),
-      answers: sortedQuestions
-        .filter((question) => answers[question.id]?.trim())
-        .map((question) => ({
+      answers: sortedQuestions.map((question) => ({
           questionId: question.id,
-          answer: answers[question.id].trim(),
+          answer: (answers[question.id] ?? '').trim(),
         })),
     });
   };
@@ -85,6 +83,7 @@ export default function JobApplicationForm({
                     }));
                   }}
                   className="min-h-28 w-full resize-y rounded-lg border border-solid border-[#d9d9e2] bg-white px-3 py-3 text-sm outline-none focus:border-[#ef476f] focus:ring-2 focus:ring-[#ef476f]/15"
+                  required
                   maxLength={3000}
                 />
               </label>

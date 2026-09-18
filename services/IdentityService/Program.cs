@@ -63,6 +63,13 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+if (app.Configuration.GetValue<bool>("Database:ApplyMigrations"))
+{
+    using var scope = app.Services.CreateScope();
+    scope.ServiceProvider.GetRequiredService<IdentityDbContext>()
+        .Database.Migrate();
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

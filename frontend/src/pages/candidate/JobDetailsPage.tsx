@@ -126,7 +126,11 @@ export default function JobDetailsPage() {
       setSubmitError('');
       setSuccess('');
 
-      await jobApplicationsApi.applyForJob(id, request);
+      const application = await jobApplicationsApi.applyForJob(id, request);
+
+      if (request.answers.length > 0) {
+        await quizApi.submitAnswers(application.id, request.answers);
+      }
 
       setAlreadyApplied(true);
       setSuccess('Your application was submitted successfully.');

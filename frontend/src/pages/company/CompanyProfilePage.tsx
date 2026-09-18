@@ -48,7 +48,10 @@ export default function CompanyProfilePage() {
       setSuccess('');
 
       const updated = await companyApi.updateCompanyProfile(
-        data
+        {
+          ...data,
+          website: data.website?.trim() || null,
+        }
       );
 
       setProfile(updated);

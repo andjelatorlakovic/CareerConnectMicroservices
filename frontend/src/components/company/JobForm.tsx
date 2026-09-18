@@ -93,13 +93,8 @@ export default function JobForm({
     const salaryMin = form.salaryMin === '' ? null : Number(form.salaryMin);
     const salaryMax = form.salaryMax === '' ? null : Number(form.salaryMax);
 
-    if (
-      form.title.trim().length < 3 ||
-      form.location.trim().length < 2 ||
-      form.description.trim().length < 20 ||
-      form.skills.length === 0
-    ) {
-      setSkillsError('Please select at least one required skill.');
+    if (form.skills.length === 0) {
+      setSkillsError('Please select at least one skill.');
       return;
     }
 
@@ -451,6 +446,7 @@ export default function JobForm({
                         checked={form.skills.includes(
                           skill
                         )}
+                        aria-invalid={Boolean(skillsError)}
                         onChange={() =>
                           toggleSkill(skill)
                         }

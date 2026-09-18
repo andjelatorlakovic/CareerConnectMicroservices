@@ -80,7 +80,54 @@ cd ../QuizService && dotnet ef database update
 cd ../NotificationService && dotnet ef database update
 ```
 
-## Running All Microservices
+## Docker Compose
+
+Docker Compose provides a self-contained local environment for demonstrating the microservices architecture. It starts PostgreSQL, the gateway, frontend, and every microservice in a separate container.
+
+Install Docker Desktop, then create a local Docker environment file:
+
+```bash
+cp .env.docker.example .env.docker
+```
+
+Replace the placeholder secrets in `.env.docker`, then start the system:
+
+```bash
+docker compose --env-file .env.docker up --build
+```
+
+The `.env.docker` file must contain the following variables. Use local values; do not commit this file.
+
+```env
+POSTGRES_USER=careerconnect
+POSTGRES_PASSWORD=YOUR_LOCAL_DATABASE_PASSWORD
+JWT_KEY=YOUR_JWT_SECRET_WITH_AT_LEAST_32_CHARACTERS
+JWT_ISSUER=CareerConnect
+JWT_AUDIENCE=CareerConnect
+INTERNAL_API_KEY=YOUR_LOCAL_INTERNAL_API_KEY
+```
+
+The frontend is available at `http://localhost:5173` and the Docker gateway at `http://localhost:5001/health`.
+
+On its first start, each stateful service applies its own EF Core migrations to its own database. Docker data is retained in the `postgres-data` volume.
+
+Useful demonstration commands:
+
+```bash
+# Stop and start only the quiz module.
+docker compose --env-file .env.docker stop quiz-service
+docker compose --env-file .env.docker start quiz-service
+
+# View logs for one service.
+docker compose --env-file .env.docker logs -f quiz-service
+
+# Stop all containers while preserving database data.
+docker compose --env-file .env.docker down
+```
+
+The Compose configuration intentionally runs two named `MatchingService` instances. The gateway uses YARP round-robin load balancing between them, illustrating horizontal scaling of a stateless and potentially CPU-intensive module without duplicating the other services.
+
+## Running All Microservices Locally
 
 From the project root, run:
 
@@ -142,7 +189,8 @@ CareerConnectMicroservices/
 ├── services/                 # Independent microservices
 ├── gateway/ApiGateway/       # YARP API Gateway
 ├── frontend/                 # React frontend for the microservices version
+├── docker/                   # Docker and PostgreSQL initialization files
+├── docker-compose.yml        # Container orchestration and matching replicas
 ├── start-local.sh            # Local system startup script
 └── CareerConnect.Microservices.sln
 ```
-

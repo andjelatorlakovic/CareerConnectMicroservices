@@ -4,5 +4,6 @@
 **/appsettings.Development.json
 **/.env
 **/.env.*
+.env.docker
 frontend/node_modules/
 frontend/dist/

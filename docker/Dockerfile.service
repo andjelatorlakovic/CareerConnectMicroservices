@@ -1,0 +1,20 @@
+ARG SERVICE
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG SERVICE
+WORKDIR /src
+
+COPY services/${SERVICE}/${SERVICE}.csproj services/${SERVICE}/
+RUN dotnet restore "services/${SERVICE}/${SERVICE}.csproj"
+
+COPY services/${SERVICE}/ services/${SERVICE}/
+WORKDIR /src/services/${SERVICE}
+RUN dotnet publish -c Release -o /app/publish --no-restore
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+WORKDIR /app
+EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:8080
+COPY --from=build /app/publish .
+ARG SERVICE
+ENV SERVICE=${SERVICE}
+ENTRYPOINT ["sh", "-c", "dotnet \"$SERVICE.dll\""]

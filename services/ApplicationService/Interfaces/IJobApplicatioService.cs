@@ -10,4 +10,7 @@ public interface IJobApplicationService
     Task<JobApplicationDto> GetByIdAsync(
         Guid companyProfileId,
         Guid applicationId);
+    Task<JobApplicationDto> GetByCandidateAsync(
+        Guid candidateProfileId,
+        Guid applicationId);
 }

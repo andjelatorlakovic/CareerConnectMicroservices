@@ -4,8 +4,10 @@ import {
   LogLevel,
   type HubConnection,
 } from '@microsoft/signalr';
-
-type RealtimeHandler<T> = (payload: T) => void;
+import type {
+  IRealtimeService,
+  RealtimeHandler,
+} from './IRealtimeService';
 
 const hubUrl = `${import.meta.env.VITE_API_URL.replace(/\/api$/, '')}/hubs/realtime`;
 
@@ -38,7 +40,7 @@ async function getConnection(token: string) {
   return connection;
 }
 
-export const realtimeService = {
+export const realtimeService: IRealtimeService = {
   subscribe<T>(
     token: string,
     eventName: string,

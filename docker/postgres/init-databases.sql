@@ -1,0 +1,6 @@
+CREATE DATABASE careerconnect_identity;
+CREATE DATABASE careerconnect_candidate;
+CREATE DATABASE careerconnect_company;
+CREATE DATABASE careerconnect_application;
+CREATE DATABASE careerconnect_quiz;
+CREATE DATABASE careerconnect_notification;

@@ -87,11 +87,21 @@ public class JobApplicationController : ControllerBase
     }
 
     [HttpGet("{applicationId:guid}/internal")]
-    [Authorize(Roles = "Company")]
-    public async Task<IActionResult> GetForCompany(Guid applicationId)
+    [Authorize(Roles = "Company,Candidate")]
+    public async Task<IActionResult> GetInternal(Guid applicationId)
     {
         try
         {
+            if (User.IsInRole("Candidate"))
+            {
+                var candidateProfileId = await _candidateService
+                    .GetMyProfileIdAsync(GetAuthorizationHeader());
+
+                return Ok(await _jobApplicationService.GetByCandidateAsync(
+                    candidateProfileId,
+                    applicationId));
+            }
+
             var companyProfileId = await _companyService
                 .GetMyProfileIdAsync(GetAuthorizationHeader());
 
