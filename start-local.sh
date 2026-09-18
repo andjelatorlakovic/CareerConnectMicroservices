@@ -3,7 +3,7 @@
 set -uo pipefail
 
 project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-frontend_directory="$project_root/../CareerConnect/frontend"
+frontend_directory="$project_root/frontend"
 process_ids=()
 
 cleanup() {

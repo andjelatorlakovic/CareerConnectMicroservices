@@ -30,7 +30,13 @@ export default function CandidateProfileForm({
       desiredJobCategories: [...initial.desiredJobCategories],
     });
   const [form, setForm] = useState<UpdateCandidateProfileRequest>(profileToForm);
-  const [validationError, setValidationError] = useState('');
+  const [skillsError, setSkillsError] = useState('');
+  const [categoriesError, setCategoriesError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{
+    location?: string;
+    bio?: string;
+  }>({});
+  const [requiredError, setRequiredError] = useState('');
 
   useEffect(() => {
     setForm(profileToForm());
@@ -54,17 +60,39 @@ export default function CandidateProfileForm({
   ) => {
     event.preventDefault();
 
-    if (
-      form.skills.length === 0 ||
-      form.desiredJobCategories.length === 0
-    ) {
-      setValidationError(
-        'Select at least one skill and one desired job category.'
-      );
+    if (!form.location.trim() || !form.bio.trim()) {
+      setFieldErrors({});
+      setRequiredError('Please complete all required fields.');
       return;
     }
 
-    setValidationError('');
+    const errors: { location?: string; bio?: string } = {};
+    if (form.location.trim().length < 2) {
+      errors.location = 'Location must be at least 2 characters long.';
+    }
+    if (form.bio.trim().length < 20) {
+      errors.bio = 'About me must be at least 20 characters long.';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setRequiredError('');
+      setFieldErrors(errors);
+      return;
+    }
+
+    setFieldErrors({});
+    setRequiredError('');
+
+    const hasSkillsError = form.skills.length === 0;
+    const hasCategoriesError = form.desiredJobCategories.length === 0;
+    setSkillsError(hasSkillsError ? 'Please select at least one skill.' : '');
+    setCategoriesError(
+      hasCategoriesError ? 'Please select at least one desired job category.' : ''
+    );
+
+    if (hasSkillsError || hasCategoriesError) {
+      return;
+    }
 
     await onSubmit({
       ...form,
@@ -91,12 +119,15 @@ export default function CandidateProfileForm({
                   ...form,
                   location: event.target.value,
                 });
+                setFieldErrors((previous) => ({ ...previous, location: undefined }));
+                setRequiredError('');
               }}
               className="w-full rounded-lg border border-solid border-[#d9d9e2] bg-white px-3 py-3 text-sm text-[#333344] outline-none focus:border-[#ef476f] focus:ring-2 focus:ring-[#ef476f]/15"
               required
               minLength={2}
               maxLength={120}
             />
+            {fieldErrors.location && <span role="alert" className="text-sm font-medium text-[#c53659]">{fieldErrors.location}</span>}
           </label>
 
           <label className="grid gap-2 text-sm font-semibold">
@@ -130,15 +161,18 @@ export default function CandidateProfileForm({
             placeholder="Tell us about your experience and interests."
             onChange={(event) => {
               setForm({
-                ...form,
-                bio: event.target.value,
-              });
+                  ...form,
+                  bio: event.target.value,
+                });
+                setFieldErrors((previous) => ({ ...previous, bio: undefined }));
+                setRequiredError('');
             }}
             className="min-h-36 w-full resize-y rounded-lg border border-solid border-[#d9d9e2] bg-white px-3 py-3 text-sm leading-relaxed text-[#333344] outline-none focus:border-[#ef476f] focus:ring-2 focus:ring-[#ef476f]/15"
             required
             minLength={20}
             maxLength={2000}
           />
+          {fieldErrors.bio && <span role="alert" className="text-sm font-medium text-[#c53659]">{fieldErrors.bio}</span>}
         </label>
 
         <fieldset className="m-0 min-w-0 border-0 p-0">
@@ -160,12 +194,14 @@ export default function CandidateProfileForm({
                   type="checkbox"
                   checked={form.skills.includes(skill)}
                   onChange={() => {
+                    const skills = form.skills.includes(skill)
+                      ? form.skills.filter((item) => item !== skill)
+                      : [...form.skills, skill];
                     setForm({
                       ...form,
-                      skills: form.skills.includes(skill)
-                        ? form.skills.filter((item) => item !== skill)
-                        : [...form.skills, skill],
+                      skills,
                     });
+                    if (skills.length > 0) setSkillsError('');
                   }}
                   className="accent-[#ef476f]"
                 />
@@ -174,6 +210,7 @@ export default function CandidateProfileForm({
               </label>
             ))}
           </div>
+          {skillsError && <p className="m-0 mt-2 text-sm font-medium text-[#c53659]">{skillsError}</p>}
         </fieldset>
 
         <fieldset className="m-0 min-w-0 border-0 p-0">
@@ -195,15 +232,14 @@ export default function CandidateProfileForm({
                   type="checkbox"
                   checked={form.desiredJobCategories.includes(category)}
                   onChange={() => {
+                    const desiredJobCategories = form.desiredJobCategories.includes(category)
+                      ? form.desiredJobCategories.filter((item) => item !== category)
+                      : [...form.desiredJobCategories, category];
                     setForm({
                       ...form,
-                      desiredJobCategories:
-                        form.desiredJobCategories.includes(category)
-                          ? form.desiredJobCategories.filter(
-                              (item) => item !== category
-                            )
-                          : [...form.desiredJobCategories, category],
+                      desiredJobCategories,
                     });
+                    if (desiredJobCategories.length > 0) setCategoriesError('');
                   }}
                   className="accent-[#ef476f]"
                 />
@@ -212,21 +248,19 @@ export default function CandidateProfileForm({
               </label>
             ))}
           </div>
+          {categoriesError && <p className="m-0 mt-2 text-sm font-medium text-[#c53659]">{categoriesError}</p>}
         </fieldset>
 
-        {validationError && (
-          <p className="m-0 rounded-lg border border-solid border-[#f2c5ce] bg-[#fff2f4] p-3 text-sm text-[#a43651]">
-            {validationError}
-          </p>
-        )}
-
         {(isInitialProfile || isDirty) && (
-          <button
-            type="submit"
-            className="w-full cursor-pointer rounded-lg border-0 bg-[#ef476f] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#df3d65] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loading ? 'Saving...' : 'Save profile'}
-          </button>
+          <>
+            <button
+              type="submit"
+              className="w-full cursor-pointer rounded-lg border-0 bg-[#ef476f] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#df3d65] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loading ? 'Saving...' : 'Save profile'}
+            </button>
+            {requiredError && <p role="alert" className="m-0 text-sm font-medium text-[#c53659]">{requiredError}</p>}
+          </>
         )}
       </fieldset>
     </form>

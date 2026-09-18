@@ -57,6 +57,13 @@ builder.Services.AddScoped<
     ICompanyService,
     global::CompanyService.Services.CompanyService>();
 builder.Services.AddScoped<IJobService, JobService>();
+builder.Services.AddHttpClient<IRealtimePublisher, RealtimePublisher>(client =>
+{
+    client.BaseAddress = new Uri(
+        builder.Configuration["ServiceUrls:NotificationService"]
+        ?? throw new InvalidOperationException(
+            "Notification service URL is not configured."));
+});
 
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException(
@@ -104,6 +111,26 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
+{
+    var exception = context.Features
+        .Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()
+        ?.Error;
+
+    if (exception is ArgumentException or InvalidOperationException)
+    {
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        await context.Response.WriteAsJsonAsync(new { message = exception.Message });
+        return;
+    }
+
+    context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+    await context.Response.WriteAsJsonAsync(new
+    {
+        message = "An unexpected server error occurred."
+    });
+}));
 
 app.UseCors("Frontend");
 

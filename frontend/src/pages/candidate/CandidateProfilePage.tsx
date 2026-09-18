@@ -18,7 +18,7 @@ export default function CandidateProfilePage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
+  const [, setError] = useState('');
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
@@ -222,15 +222,6 @@ export default function CandidateProfilePage() {
           <p className="m-0 py-10 text-center text-[#858592]">
             Loading profile...
           </p>
-        )}
-
-        {error && (
-          <div
-            role="alert"
-            className="rounded-lg border border-solid border-[#f2c5ce] bg-[#fff2f4] p-4 text-sm text-[#a43651]"
-          >
-            {error}
-          </div>
         )}
 
         {success && (

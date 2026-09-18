@@ -71,6 +71,16 @@ builder.Services.AddHttpClient<
             "Application service URL is not configured."));
 });
 
+builder.Services.AddHttpClient<
+    IRealtimePublisher,
+    global::QuizService.Services.RealtimePublisher>(client =>
+{
+    client.BaseAddress = new Uri(
+        builder.Configuration["ServiceUrls:NotificationService"]
+        ?? throw new InvalidOperationException(
+            "Notification service URL is not configured."));
+});
+
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException("JWT key is not configured.");
 
@@ -112,6 +122,22 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
+{
+    var exception = context.Features
+        .Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()
+        ?.Error;
+
+    context.Response.StatusCode = exception is ArgumentException or InvalidOperationException
+        ? StatusCodes.Status400BadRequest
+        : StatusCodes.Status500InternalServerError;
+    await context.Response.WriteAsJsonAsync(new
+    {
+        message = exception is ArgumentException or InvalidOperationException
+            ? exception.Message
+            : "An unexpected server error occurred."
+    });
+}));
 app.UseCors("Frontend");
 app.UseAuthentication();
 app.UseAuthorization();

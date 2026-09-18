@@ -77,4 +77,26 @@ public class NotificationController : ControllerBase
 
         return Ok(await _notificationService.CreateAsync(request));
     }
+
+    [HttpPost("internal/realtime")]
+    [AllowAnonymous]
+    public async Task<IActionResult> PublishRealtimeEvent(
+        PublishRealtimeEventRequest request,
+        [FromHeader(Name = "X-Internal-Api-Key")] string? apiKey,
+        [FromServices] IConfiguration configuration)
+    {
+        var expectedApiKey = configuration["InternalApiKey"];
+
+        if (string.IsNullOrWhiteSpace(expectedApiKey) ||
+            !string.Equals(apiKey, expectedApiKey, StringComparison.Ordinal))
+        {
+            return Unauthorized();
+        }
+
+        await _notificationService.PublishRealtimeEventAsync(
+            request.EventName,
+            request.Payload);
+
+        return NoContent();
+    }
 }

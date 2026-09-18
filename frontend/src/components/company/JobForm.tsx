@@ -69,7 +69,8 @@ export default function JobForm({
     salaryMax:
       initial.salaryMax ?? '',
   });
-  const [validationError, setValidationError] = useState('');
+  const [skillsError, setSkillsError] = useState('');
+  const [salaryError, setSalaryError] = useState('');
 
   const toggleSkill = (skill: SkillValue) => {
     setForm((previous) => ({
@@ -81,6 +82,7 @@ export default function JobForm({
           )
         : [...previous.skills, skill],
     }));
+    setSkillsError('');
   };
 
   const handleSubmit = (
@@ -97,21 +99,21 @@ export default function JobForm({
       form.description.trim().length < 20 ||
       form.skills.length === 0
     ) {
-      setValidationError('Complete all required fields and select at least one skill.');
+      setSkillsError('Please select at least one required skill.');
       return;
     }
 
     if (form.expiresAt < today) {
-      setValidationError('The expiration date cannot be in the past.');
       return;
     }
 
     if (salaryMin !== null && salaryMax !== null && salaryMin > salaryMax) {
-      setValidationError('Minimum salary cannot be greater than maximum salary.');
+      setSalaryError('Maximum salary must be equal to or greater than minimum salary.');
       return;
     }
 
-    setValidationError('');
+    setSkillsError('');
+    setSalaryError('');
     onSubmit(form);
   };
 
@@ -366,11 +368,7 @@ export default function JobForm({
                   placeholder="E.g. 1000"
                   value={form.salaryMin}
                   onChange={(event) =>
-                    setForm({
-                      ...form,
-                      salaryMin:
-                        event.target.value,
-                    })
+                    { setSalaryError(''); setForm({ ...form, salaryMin: event.target.value }); }
                   }
                   className="h-12 w-full rounded-xl border border-solid border-[#e2dfe9] bg-white px-4 text-sm text-[#333344] outline-none transition placeholder:text-[#aaa8b4] hover:border-[#f3a0b5] focus:border-[#ef476f] focus:ring-4 focus:ring-[#ef476f]/10"
                   min="0"
@@ -391,16 +389,13 @@ export default function JobForm({
                   placeholder="E.g. 2000"
                   value={form.salaryMax}
                   onChange={(event) =>
-                    setForm({
-                      ...form,
-                      salaryMax:
-                        event.target.value,
-                    })
+                    { setSalaryError(''); setForm({ ...form, salaryMax: event.target.value }); }
                   }
                   className="h-12 w-full rounded-xl border border-solid border-[#e2dfe9] bg-white px-4 text-sm text-[#333344] outline-none transition placeholder:text-[#aaa8b4] hover:border-[#f3a0b5] focus:border-[#ef476f] focus:ring-4 focus:ring-[#ef476f]/10"
                   min={form.salaryMin || '0'}
                   step="0.01"
                 />
+                {salaryError && <p role="alert" className="m-0 text-sm font-medium text-[#c53659]">{salaryError}</p>}
 
               </div>
 
@@ -472,14 +467,9 @@ export default function JobForm({
                 )}
 
               </div>
+              {skillsError && <p role="alert" className="m-0 text-sm font-medium text-[#c53659]">{skillsError}</p>}
 
             </fieldset>
-
-            {validationError && (
-              <p className="m-0 rounded-xl border border-solid border-[#f2c5ce] bg-[#fff2f4] px-4 py-3 text-sm font-medium text-[#a43651]">
-                {validationError}
-              </p>
-            )}
 
             {/* DUGME */}
 

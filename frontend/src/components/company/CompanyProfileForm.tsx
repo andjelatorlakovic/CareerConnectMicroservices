@@ -24,6 +24,10 @@ export default function CompanyProfileForm({
     contactPhone: initial.contactPhone,
   });
   const [form, setForm] = useState<UpdateCompanyProfileRequest>(profileToForm);
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<keyof UpdateCompanyProfileRequest, string>>
+  >({});
+  const [requiredError, setRequiredError] = useState('');
 
   useEffect(() => {
     setForm(profileToForm());
@@ -45,10 +49,45 @@ export default function CompanyProfileForm({
     value: string
   ) => {
     setForm((previous) => ({ ...previous, [field]: value }));
+    setFieldErrors((previous) => ({ ...previous, [field]: undefined }));
+    setRequiredError('');
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    const requiredValues = [
+      form.name,
+      form.industry,
+      form.location,
+      form.description,
+      form.contactEmail,
+      form.contactPhone,
+    ];
+
+    if (requiredValues.some((value) => !value.trim())) {
+      setFieldErrors({});
+      setRequiredError('Please complete all required fields.');
+      return;
+    }
+
+    const errors: Partial<Record<keyof UpdateCompanyProfileRequest, string>> = {};
+    if (form.name.trim().length < 2) errors.name = 'Company name must be at least 2 characters long.';
+    if (form.industry.trim().length < 2) errors.industry = 'Industry must be at least 2 characters long.';
+    if (form.location.trim().length < 2) errors.location = 'Location must be at least 2 characters long.';
+    if (form.description.trim().length < 20) errors.description = 'Company description must be at least 20 characters long.';
+    if (!/^\S+@\S+\.\S+$/.test(form.contactEmail.trim())) errors.contactEmail = 'Enter a valid contact email address.';
+    if (!/^[0-9+() -]{6,32}$/.test(form.contactPhone.trim())) errors.contactPhone = 'Enter a valid contact phone number.';
+    if (form.website?.trim() && !/^https?:\/\/\S+$/i.test(form.website.trim())) errors.website = 'Enter a valid website address, including https://.';
+
+    if (Object.keys(errors).length > 0) {
+      setRequiredError('');
+      setFieldErrors(errors);
+      return;
+    }
+
+    setRequiredError('');
+    setFieldErrors({});
     onSubmit(form);
   };
 
@@ -91,6 +130,7 @@ export default function CompanyProfileForm({
                     minLength={2}
                     maxLength={120}
                   />
+                  {fieldErrors.name && <span role="alert" className="text-sm font-medium text-[#c53659]">{fieldErrors.name}</span>}
                 </label>
 
                 <label className="grid gap-2 text-sm font-semibold text-[#333344]">
@@ -104,6 +144,7 @@ export default function CompanyProfileForm({
                     minLength={2}
                     maxLength={100}
                   />
+                  {fieldErrors.industry && <span role="alert" className="text-sm font-medium text-[#c53659]">{fieldErrors.industry}</span>}
                 </label>
 
                 <label className="grid gap-2 text-sm font-semibold text-[#333344]">
@@ -117,6 +158,7 @@ export default function CompanyProfileForm({
                     minLength={2}
                     maxLength={120}
                   />
+                  {fieldErrors.location && <span role="alert" className="text-sm font-medium text-[#c53659]">{fieldErrors.location}</span>}
                 </label>
 
                 <label className="grid gap-2 text-sm font-semibold text-[#333344] md:col-span-2">
@@ -131,6 +173,7 @@ export default function CompanyProfileForm({
                     minLength={20}
                     maxLength={2000}
                   />
+                  {fieldErrors.description && <span role="alert" className="text-sm font-medium text-[#c53659]">{fieldErrors.description}</span>}
                 </label>
               </div>
             </section>
@@ -155,6 +198,7 @@ export default function CompanyProfileForm({
                     className={inputClassName}
                     maxLength={300}
                   />
+                  {fieldErrors.website && <span role="alert" className="text-sm font-medium text-[#c53659]">{fieldErrors.website}</span>}
                 </label>
 
                 <label className="grid gap-2 text-sm font-semibold text-[#333344]">
@@ -168,6 +212,7 @@ export default function CompanyProfileForm({
                     required
                     maxLength={254}
                   />
+                  {fieldErrors.contactEmail && <span role="alert" className="text-sm font-medium text-[#c53659]">{fieldErrors.contactEmail}</span>}
                 </label>
 
                 <label className="grid gap-2 text-sm font-semibold text-[#333344]">
@@ -183,17 +228,21 @@ export default function CompanyProfileForm({
                     maxLength={32}
                     pattern="[0-9+() -]+"
                   />
+                  {fieldErrors.contactPhone && <span role="alert" className="text-sm font-medium text-[#c53659]">{fieldErrors.contactPhone}</span>}
                 </label>
               </div>
             </section>
 
             {(isInitialProfile || isDirty) && (
-              <button
-                type="submit"
-                className="w-full cursor-pointer rounded-xl border-0 bg-[#ef476f] px-5 py-4 text-sm font-bold text-white transition hover:bg-[#df3d65] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {loading ? 'Saving...' : 'Save profile'}
-              </button>
+              <>
+                <button
+                  type="submit"
+                  className="w-full cursor-pointer rounded-xl border-0 bg-[#ef476f] px-5 py-4 text-sm font-bold text-white transition hover:bg-[#df3d65] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {loading ? 'Saving...' : 'Save profile'}
+                </button>
+                {requiredError && <p role="alert" className="m-0 text-sm font-medium text-[#c53659]">{requiredError}</p>}
+              </>
             )}
           </fieldset>
         </form>

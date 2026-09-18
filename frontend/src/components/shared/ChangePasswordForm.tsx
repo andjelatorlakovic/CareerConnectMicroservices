@@ -17,21 +17,30 @@ export default function ChangePasswordForm({
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
-  const [error, setError] = useState('');
+  const [passwordError, setPasswordError] = useState<{
+    field: 'newPassword' | 'confirmation';
+    message: string;
+  } | null>(null);
 
   const handleSubmit = async (
     event: FormEvent<HTMLFormElement>
   ) => {
     event.preventDefault();
-    setError('');
+    setPasswordError(null);
 
     if (newPassword !== confirmation) {
-      setError('New passwords do not match.');
+      setPasswordError({
+        field: 'confirmation',
+        message: 'New passwords do not match.',
+      });
       return;
     }
 
     if (currentPassword === newPassword) {
-      setError('The new password must be different from the current password.');
+      setPasswordError({
+        field: 'newPassword',
+        message: 'The new password must be different from the current password.',
+      });
       return;
     }
 
@@ -49,15 +58,6 @@ export default function ChangePasswordForm({
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-4">
-      {error && (
-        <div
-          role="alert"
-          className="rounded-lg border border-solid border-[#f2c5ce] bg-[#fff2f4] p-4 text-sm text-[#a43651]"
-        >
-          {error}
-        </div>
-      )}
-
       <fieldset
         disabled={loading}
         className="m-0 grid min-w-0 gap-5 border-0 p-0"
@@ -94,9 +94,15 @@ export default function ChangePasswordForm({
               value={newPassword}
               onChange={(event) => {
                 setNewPassword(event.target.value);
+                if (passwordError?.field === 'newPassword') setPasswordError(null);
               }}
               className="h-12 w-full min-w-0 rounded-xl border border-solid border-[#e0dce7] bg-[#f8f8fc] px-4 py-3 text-sm font-normal tracking-normal text-[#24233d] outline-none transition-colors placeholder:text-[#918a9d] hover:border-[#cbb9c8] focus:border-[#ef476f] focus:bg-white focus:ring-4 focus:ring-[#ef476f]/10 disabled:opacity-60"
             />
+            {passwordError?.field === 'newPassword' && (
+              <span role="alert" className="text-sm font-medium normal-case tracking-normal text-[#c53659]">
+                {passwordError.message}
+              </span>
+            )}
           </label>
 
           <label className="grid min-w-0 gap-2.5 text-xs font-semibold tracking-wide text-[#625d76]">
@@ -112,9 +118,15 @@ export default function ChangePasswordForm({
               value={confirmation}
               onChange={(event) => {
                 setConfirmation(event.target.value);
+                if (passwordError?.field === 'confirmation') setPasswordError(null);
               }}
               className="h-12 w-full min-w-0 rounded-xl border border-solid border-[#e0dce7] bg-[#f8f8fc] px-4 py-3 text-sm font-normal tracking-normal text-[#24233d] outline-none transition-colors placeholder:text-[#918a9d] hover:border-[#cbb9c8] focus:border-[#ef476f] focus:bg-white focus:ring-4 focus:ring-[#ef476f]/10 disabled:opacity-60"
             />
+            {passwordError?.field === 'confirmation' && (
+              <span role="alert" className="text-sm font-medium normal-case tracking-normal text-[#c53659]">
+                {passwordError.message}
+              </span>
+            )}
           </label>
         </div>
 

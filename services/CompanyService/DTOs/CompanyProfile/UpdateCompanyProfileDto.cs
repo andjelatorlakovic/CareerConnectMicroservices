@@ -13,7 +13,7 @@ public class UpdateCompanyProfileDto
     public string Location { get; set; } = string.Empty;
 
     [Url, StringLength(300)]
-    public string Website { get; set; } = string.Empty;
+    public string? Website { get; set; }
 
     [Required, StringLength(100, MinimumLength = 2)]
     public string Industry { get; set; } = string.Empty;

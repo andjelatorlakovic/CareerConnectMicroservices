@@ -26,11 +26,13 @@ import NotificationsPage from './pages/candidate/NotificationsPage';
 import AccountPage from './pages/shared/AccountPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminCompanyJobsPage from './pages/admin/AdminCompanyJobsPage';
+import ApiErrorToast from './components/shared/ApiErrorToast';
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <ApiErrorToast />
         <Routes>
           <Route
             path="/login"

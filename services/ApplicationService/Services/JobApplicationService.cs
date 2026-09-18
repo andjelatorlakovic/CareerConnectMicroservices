@@ -65,7 +65,12 @@ public class JobApplicationService : IJobApplicationService
         _context.JobApplications.Add(application);
         await _context.SaveChangesAsync();
 
-        return MapToDto(application);
+        var dto = MapToDto(application);
+        await PublishRealtimeEventSafelyAsync(
+            "JobApplicationsChanged",
+            application.JobListingId.ToString());
+
+        return dto;
     }
 
     public async Task<List<JobApplicationDto>> GetMyApplicationsAsync(
@@ -129,6 +134,9 @@ public class JobApplicationService : IJobApplicationService
         if (previousStatus != application.Status)
         {
             await NotifyCandidateAboutStatusChangeAsync(application);
+            await PublishRealtimeEventSafelyAsync(
+                "ApplicationStatusChanged",
+                MapToDto(application));
         }
 
         return MapToDto(application);
@@ -157,6 +165,25 @@ public class JobApplicationService : IJobApplicationService
                 exception,
                 "The application status was updated, but the notification could not be sent for application {ApplicationId}.",
                 application.Id);
+        }
+    }
+
+    private async Task PublishRealtimeEventSafelyAsync<T>(
+        string eventName,
+        T payload)
+    {
+        try
+        {
+            await _notificationService.PublishRealtimeEventAsync(
+                eventName,
+                payload);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(
+                exception,
+                "The {EventName} real-time event could not be published.",
+                eventName);
         }
     }
 

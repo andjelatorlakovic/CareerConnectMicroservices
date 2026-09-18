@@ -70,6 +70,22 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
+{
+    var exception = context.Features
+        .Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()
+        ?.Error;
+
+    context.Response.StatusCode = exception is ArgumentException or InvalidOperationException
+        ? StatusCodes.Status400BadRequest
+        : StatusCodes.Status500InternalServerError;
+    await context.Response.WriteAsJsonAsync(new
+    {
+        message = exception is ArgumentException or InvalidOperationException
+            ? exception.Message
+            : "An unexpected server error occurred."
+    });
+}));
 
 app.UseCors("Frontend");
 

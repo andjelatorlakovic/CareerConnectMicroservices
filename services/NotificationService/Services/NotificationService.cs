@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using NotificationService.Data;
 using NotificationService.DTOs;
 using NotificationService.Hubs;
@@ -89,6 +90,15 @@ public class NotificationService : INotificationService
             .SendAsync("NotificationRead", notificationId.ToString());
 
         await SendUnreadCountAsync(userId);
+    }
+
+    public Task PublishRealtimeEventAsync(
+        string eventName,
+        JsonElement? payload)
+    {
+        return _hubContext.Clients.All.SendAsync(
+            eventName,
+            payload);
     }
 
     private async Task SendUnreadCountAsync(Guid userId)

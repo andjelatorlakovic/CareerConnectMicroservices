@@ -11,15 +11,21 @@ public class QuizService : IQuizService
     private readonly QuizDbContext _context;
     private readonly ICompanyService _companyService;
     private readonly IJobApplicationService _jobApplicationService;
+    private readonly IRealtimePublisher _realtimePublisher;
+    private readonly ILogger<QuizService> _logger;
 
     public QuizService(
         QuizDbContext context,
         ICompanyService companyService,
-        IJobApplicationService jobApplicationService)
+        IJobApplicationService jobApplicationService,
+        IRealtimePublisher realtimePublisher,
+        ILogger<QuizService> logger)
     {
         _context = context;
         _companyService = companyService;
         _jobApplicationService = jobApplicationService;
+        _realtimePublisher = realtimePublisher;
+        _logger = logger;
     }
 
     public async Task<JobListingQuestionDto> AddQuestionAsync(
@@ -38,6 +44,7 @@ public class QuizService : IQuizService
 
         _context.JobListingQuestions.Add(question);
         await _context.SaveChangesAsync();
+        await PublishQuestionsChangedAsync(jobId);
 
         return MapToDto(question);
     }
@@ -97,6 +104,7 @@ public class QuizService : IQuizService
 
         _context.JobListingQuestions.Remove(question);
         await _context.SaveChangesAsync();
+        await PublishQuestionsChangedAsync(jobId);
 
         return true;
     }
@@ -186,4 +194,21 @@ public class QuizService : IQuizService
         QuestionText = question.QuestionText,
         OrderIndex = question.OrderIndex
     };
+
+    private async Task PublishQuestionsChangedAsync(Guid jobId)
+    {
+        try
+        {
+            await _realtimePublisher.PublishAsync(
+                "JobQuestionsChanged",
+                jobId.ToString());
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(
+                exception,
+                "The JobQuestionsChanged real-time event could not be published for job {JobId}.",
+                jobId);
+        }
+    }
 }

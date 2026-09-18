@@ -29,9 +29,16 @@ public class CompanyController : ControllerBase
     [HttpPut("profile")]
     public async Task<IActionResult> UpdateCompanyProfile([FromBody] UpdateCompanyProfileDto profileDto)
     {
-        var userId = GetUserIdFromClaims();
-        var updatedProfile = await _companyService.UpdateCompanyProfileAsync(userId, profileDto);
-        return Ok(updatedProfile);
+        try
+        {
+            var userId = GetUserIdFromClaims();
+            var updatedProfile = await _companyService.UpdateCompanyProfileAsync(userId, profileDto);
+            return Ok(updatedProfile);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
     }
 
     private Guid GetUserIdFromClaims()

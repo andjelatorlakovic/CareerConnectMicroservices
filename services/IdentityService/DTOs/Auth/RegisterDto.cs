@@ -5,10 +5,14 @@ using IdentityService.Enums;
 namespace IdentityService.DTOs.Auth;
 public class RegisterDto
 {
-    [StringLength(80, MinimumLength = 2)]
+    [RegularExpression(
+        @"^$|^.{2,80}$",
+        ErrorMessage = "First name must be between 2 and 80 characters when provided.")]
     public string? FirstName { get; set; }
 
-    [StringLength(80, MinimumLength = 2)]
+    [RegularExpression(
+        @"^$|^.{2,80}$",
+        ErrorMessage = "Last name must be between 2 and 80 characters when provided.")]
     public string? LastName { get; set; }
 
     [Required, EmailAddress, StringLength(254)]

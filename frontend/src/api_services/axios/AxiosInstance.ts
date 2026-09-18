@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { showApiError } from '../../components/shared/ApiErrorToast';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -24,6 +25,13 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('user');
       window.location.href = '/login';
+    } else {
+      const responseData = error.response?.data as { message?: string; title?: string } | undefined;
+      showApiError(
+        responseData?.message
+        || responseData?.title
+        || 'The request could not be completed. Please try again.'
+      );
     }
 
     return Promise.reject(error);

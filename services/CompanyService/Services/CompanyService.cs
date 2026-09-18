@@ -52,13 +52,13 @@ public class CompanyService: ICompanyService
         var profile = await _context.CompanyProfiles.FirstOrDefaultAsync(p => p.UserId == userId) 
             ?? throw new Exception("Company profile not found.");
         
-        profile.Name = profileDto.Name;
-        profile.Description = profileDto.Description;
-        profile.Location = profileDto.Location;
-        profile.Website = profileDto.Website;
-        profile.Industry = profileDto.Industry;
-        profile.ContactEmail=profileDto.ContactEmail;
-        profile.ContactPhone=profileDto.ContactPhone;
+        profile.Name = profileDto.Name.Trim();
+        profile.Description = profileDto.Description.Trim();
+        profile.Location = profileDto.Location.Trim();
+        profile.Website = profileDto.Website?.Trim() ?? string.Empty;
+        profile.Industry = profileDto.Industry.Trim();
+        profile.ContactEmail = profileDto.ContactEmail.Trim();
+        profile.ContactPhone = profileDto.ContactPhone.Trim();
 
         await _context.SaveChangesAsync();
         return MapToDto(profile);

@@ -10,10 +10,17 @@ namespace CompanyService.Services;
 public class JobService : IJobService
 {
     private readonly CompanyDbContext _context;
+    private readonly IRealtimePublisher _realtimePublisher;
+    private readonly ILogger<JobService> _logger;
 
-    public JobService(CompanyDbContext context)
+    public JobService(
+        CompanyDbContext context,
+        IRealtimePublisher realtimePublisher,
+        ILogger<JobService> logger)
     {
         _context = context;
+        _realtimePublisher = realtimePublisher;
+        _logger = logger;
     }
     //Zatvaranje oglasa
     public async Task<bool> CloseAsync(Guid companyProfileId, Guid JobId)
@@ -22,6 +29,7 @@ public class JobService : IJobService
         if(job==null) return false;
         job.Status=JobStatus.Closed;
         await _context.SaveChangesAsync();
+        await PublishJobListingsChangedAsync();
         return true;
     }
     //Kreiranje oglasa 
@@ -45,6 +53,7 @@ public class JobService : IJobService
         };
         _context.JobListings.Add(job);
         await _context.SaveChangesAsync();
+        await PublishJobListingsChangedAsync();
         return  MapToDto(job);
     }
     public async Task<List<JobListingDto>> GetAllAsync(string? location, ExperienceLevel? experienceLevel, List<Skill> skills)
@@ -107,6 +116,7 @@ public class JobService : IJobService
         job.SalaryMax= request.SalaryMax;
 
         await _context.SaveChangesAsync();
+        await PublishJobListingsChangedAsync();
         return MapToDto(job);
     }
 
@@ -124,6 +134,7 @@ public class JobService : IJobService
         job.ExpiresAt=expiresAt;
 
         await _context.SaveChangesAsync();
+        await PublishJobListingsChangedAsync();
         return true;
     }
     public async Task<List<JobListingDto>> GetByUserAsync(Guid userId)
@@ -170,6 +181,22 @@ public class JobService : IJobService
         if (salaryMin.HasValue && salaryMax.HasValue && salaryMin > salaryMax)
         {
             throw new ArgumentException("Minimum salary cannot exceed maximum salary.");
+        }
+    }
+
+    private async Task PublishJobListingsChangedAsync()
+    {
+        try
+        {
+            await _realtimePublisher.PublishAsync(
+                "JobListingsChanged",
+                new { });
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(
+                exception,
+                "The JobListingsChanged real-time event could not be published.");
         }
     }
 }
