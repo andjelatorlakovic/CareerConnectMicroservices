@@ -6,6 +6,7 @@ import CompanyProfileForm from '../../components/company/CompanyProfileForm';
 
 import type { CompanyProfile } from '../../models/company/CompanyProfile';
 import type { UpdateCompanyProfileRequest } from '../../types/company/UpdateCompanyProfileRequest';
+import { getApiErrorMessage } from '../../utils/getApiErrorMessage';
 
 export default function CompanyProfilePage() {
   const [profile, setProfile] =
@@ -56,8 +57,11 @@ export default function CompanyProfilePage() {
 
       setProfile(updated);
       setSuccess('Profile saved successfully.');
-    } catch {
-      setError('Company profile could not be saved.');
+    } catch (error) {
+      setError(getApiErrorMessage(
+        error,
+        'Company profile could not be saved.'
+      ));
     } finally {
       setSaving(false);
     }

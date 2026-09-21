@@ -3,7 +3,6 @@ import api from '../axios/AxiosInstance';
 import type { JobListingQuestion } from '../../models/quiz/JobListingQuestion';
 import type { QuizAnswer } from '../../models/quiz/QuizAnswer';
 import type { AddQuestionRequest } from '../../types/quiz/AddQuestionRequest';
-import type { SubmitAnswerRequest } from '../../types/quiz/SubmitAnswerRequest';
 import type { IQuizApiService } from './IQuizApiService';
 
 export const quizApi: IQuizApiService = {
@@ -39,12 +38,5 @@ export const quizApi: IQuizApiService = {
         `/quiz/applications/${applicationId}/answers`
       )
     ).data;
-  },
-
-  async submitAnswers(
-    applicationId: string,
-    answers: SubmitAnswerRequest[]
-  ) {
-    await api.post(`/quiz/applications/${applicationId}/answers`, answers);
   },
 };

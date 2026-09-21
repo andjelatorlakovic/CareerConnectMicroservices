@@ -22,7 +22,8 @@ export default function AccountPage() {
   const [account, setAccount] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
+  const [accountError, setAccountError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const [success, setSuccess] = useState('');
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -38,7 +39,7 @@ export default function AccountPage() {
         }
       } catch {
         if (active) {
-          setError('Account details could not be loaded.');
+          setAccountError('Account details could not be loaded.');
         }
       } finally {
         if (active) {
@@ -59,7 +60,7 @@ export default function AccountPage() {
   ): Promise<void> => {
     try {
       setSaving(true);
-      setError('');
+      setAccountError('');
       setSuccess('');
 
       const updated = await userApi.updateMe(request);
@@ -76,7 +77,7 @@ export default function AccountPage() {
 
       setSuccess('Account details saved successfully.');
     } catch {
-      setError('Account details could not be saved.');
+      setAccountError('Account details could not be saved.');
     } finally {
       setSaving(false);
     }
@@ -87,7 +88,7 @@ export default function AccountPage() {
   ): Promise<boolean> => {
     try {
       setSaving(true);
-      setError('');
+      setPasswordError('');
       setSuccess('');
 
       await userApi.changePassword(request);
@@ -96,8 +97,8 @@ export default function AccountPage() {
 
       return true;
     } catch {
-      setError(
-        'Lozinka nije promenjena. Proverite trenutnu lozinku.'
+      setPasswordError(
+        'Password could not be changed. Check your current password and try again.'
       );
 
       return false;
@@ -136,12 +137,12 @@ export default function AccountPage() {
             </p>
           )}
 
-          {error && (
+          {accountError && (
             <div
               role="alert"
               className="rounded-lg border border-solid border-[#f2c5ce] bg-[#fff2f4] p-4 text-[#a43651]"
             >
-              {error}
+              {accountError}
             </div>
           )}
 
@@ -209,8 +210,13 @@ export default function AccountPage() {
                           <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#24233d] text-[#ffd5e0]">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><rect x="5" y="10" width="14" height="11" rx="3" /><path d="M8 10V7a4 4 0 0 1 8 0v3M12 15v2" /></svg>
                           </span>
-                          <div><h2 className="m-0 text-base font-bold text-[#24233d]">Promena lozinke</h2><p className="m-0 mt-1 text-xs leading-relaxed text-[#777586]">Unesite trenutnu lozinku, zatim novu lozinku i njenu potvrdu.</p></div>
+                          <div><h2 className="m-0 text-base font-bold text-[#24233d]">Change password</h2><p className="m-0 mt-1 text-xs leading-relaxed text-[#777586]">Enter your current password, then your new password and confirmation.</p></div>
                         </div>
+                        {passwordError && (
+                          <p role="alert" className="m-0 -mt-2 text-sm font-medium text-[#c53659]">
+                            {passwordError}
+                          </p>
+                        )}
                         <ChangePasswordForm loading={saving} onSubmit={handleChangePassword} />
                       </section>
                     </div>

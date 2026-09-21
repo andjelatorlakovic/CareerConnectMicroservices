@@ -68,6 +68,14 @@ builder.Services.AddHttpClient<ICompanyService, CompanyService>(client =>
             "Company service URL is not configured."));
 });
 
+builder.Services.AddHttpClient<IQuizService, QuizService>(client =>
+{
+    client.BaseAddress = new Uri(
+        builder.Configuration["ServiceUrls:QuizService"]
+        ?? throw new InvalidOperationException(
+            "Quiz service URL is not configured."));
+});
+
 builder.Services.AddHttpClient<
     INotificationService,
     global::ApplicationService.Services.NotificationService>(client =>

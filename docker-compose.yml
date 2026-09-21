@@ -106,6 +106,7 @@ services:
       InternalApiKey: ${INTERNAL_API_KEY}
       ServiceUrls__CandidateService: http://candidate-service:8080/
       ServiceUrls__CompanyService: http://company-service:8080/
+      ServiceUrls__QuizService: http://quiz-service:8080/
       ServiceUrls__NotificationService: http://notification-service:8080/
     depends_on:
       postgres:

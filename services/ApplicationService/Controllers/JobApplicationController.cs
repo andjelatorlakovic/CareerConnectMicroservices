@@ -39,7 +39,8 @@ public class JobApplicationController : ControllerBase
                 .ApplyJobApplicationAsync(
                     candidateProfileId,
                     jobId,
-                    request);
+                    request,
+                    GetAuthorizationHeader());
 
             return Ok(application);
         }

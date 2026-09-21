@@ -14,11 +14,13 @@ const hubUrl = `${import.meta.env.VITE_API_URL.replace(/\/api$/, '')}/hubs/realt
 let connection: HubConnection | null = null;
 let connectionToken: string | null = null;
 let subscriberCount = 0;
+let connectionStartPromise: Promise<void> | null = null;
 
 async function getConnection(token: string) {
   if (connection && connectionToken !== token) {
     await connection.stop();
     connection = null;
+    connectionStartPromise = null;
   }
 
   if (!connection) {
@@ -34,7 +36,15 @@ async function getConnection(token: string) {
   }
 
   if (connection.state === HubConnectionState.Disconnected) {
-    await connection.start();
+    connectionStartPromise ??= connection
+      .start()
+      .finally(() => {
+        connectionStartPromise = null;
+      });
+  }
+
+  if (connectionStartPromise) {
+    await connectionStartPromise;
   }
 
   return connection;
@@ -70,11 +80,22 @@ export const realtimeService: IRealtimeService = {
         activeConnection.off(eventName, handler);
       }
 
-      if (subscriberCount === 0 && connection) {
-        void connection.stop();
-        connection = null;
-        connectionToken = null;
-      }
+      const connectionToStop = connection;
+
+      window.setTimeout(() => {
+        if (subscriberCount !== 0 || !connectionToStop ||
+            connection !== connectionToStop) {
+          return;
+        }
+
+        void connectionToStop.stop().finally(() => {
+          if (connection === connectionToStop) {
+            connection = null;
+            connectionToken = null;
+            connectionStartPromise = null;
+          }
+        });
+      }, 0);
     };
   },
 };

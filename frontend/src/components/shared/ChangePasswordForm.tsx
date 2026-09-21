@@ -72,7 +72,7 @@ export default function ChangePasswordForm({
               minLength={6}
               maxLength={128}
               autoComplete="current-password"
-              placeholder="Unesite trenutnu lozinku"
+              placeholder="Enter your current password"
               value={currentPassword}
               onChange={(event) => {
                 setCurrentPassword(event.target.value);

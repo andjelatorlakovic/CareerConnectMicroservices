@@ -30,23 +30,20 @@ export default function JobApplicationsPage() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const handleApplicationCreated = useCallback(
-    (application: JobApplication) => {
-      if (application.jobListingId !== jobId) return;
-
-      setApplications((previous) =>
-        previous.some((item) => item.id === application.id)
-          ? previous
-          : [application, ...previous]
-      );
+  const handleApplicationsChanged = useCallback(
+    (changedJobId: string) => {
+      if (changedJobId === jobId) {
+        setRefreshKey((previous) => previous + 1);
+      }
     },
     [jobId]
   );
 
-  useRealtimeEvent<JobApplication>(
-    'ApplicationCreated',
-    handleApplicationCreated
+  useRealtimeEvent<string>(
+    'JobApplicationsChanged',
+    handleApplicationsChanged
   );
 
   // ========================================
@@ -76,7 +73,7 @@ export default function JobApplicationsPage() {
     };
 
     void loadApplications();
-  }, [jobId]);
+  }, [jobId, refreshKey]);
 
   // ========================================
   // CHANGE APPLICATION STATUS

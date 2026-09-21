@@ -13,6 +13,7 @@ public class JobApplicationService : IJobApplicationService
     private readonly ICompanyService _companyService;
     private readonly ICandidateService _candidateService;
     private readonly INotificationService _notificationService;
+    private readonly IQuizService _quizService;
     private readonly ILogger<JobApplicationService> _logger;
 
     public JobApplicationService(
@@ -20,19 +21,22 @@ public class JobApplicationService : IJobApplicationService
         ICompanyService companyService,
         ICandidateService candidateService,
         INotificationService notificationService,
+        IQuizService quizService,
         ILogger<JobApplicationService> logger)
     {
         _context = context;
         _companyService = companyService;
         _candidateService = candidateService;
         _notificationService = notificationService;
+        _quizService = quizService;
         _logger = logger;
     }
 
     public async Task<JobApplicationDto> ApplyJobApplicationAsync(
         Guid candidateProfileId,
         Guid jobListingId,
-        CreateJobApplicationRequest request)
+        CreateJobApplicationRequest request,
+        string authorizationHeader)
     {
         var job = await _companyService.GetJobAsync(jobListingId);
 
@@ -64,6 +68,14 @@ public class JobApplicationService : IJobApplicationService
 
         _context.JobApplications.Add(application);
         await _context.SaveChangesAsync();
+
+        if (request.Answers.Any())
+        {
+            await _quizService.SaveAnswersAsync(
+                application.Id,
+                request.Answers,
+                authorizationHeader);
+        }
 
         var dto = MapToDto(application);
         await PublishRealtimeEventSafelyAsync(
