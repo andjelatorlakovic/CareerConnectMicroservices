@@ -109,6 +109,22 @@ public class QuizService : IQuizService
         return true;
     }
 
+    public async Task DeleteByJobAsync(Guid jobId)
+    {
+        var questions = await _context.JobListingQuestions
+            .Where(question => question.JobListingId == jobId)
+            .ToListAsync();
+
+        if (questions.Count == 0)
+        {
+            return;
+        }
+
+        _context.JobListingQuestions.RemoveRange(questions);
+        await _context.SaveChangesAsync();
+        await PublishQuestionsChangedAsync(jobId);
+    }
+
     public async Task SaveAnswersAsync(
         Guid applicationId,
         List<SubmitAnswerRequest> answers,

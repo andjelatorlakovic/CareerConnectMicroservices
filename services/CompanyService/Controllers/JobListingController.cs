@@ -117,6 +117,25 @@ public class JobListingController : ControllerBase
         }
         return NoContent();
     }
+    [HttpDelete("internal/{jobId:guid}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> DeleteForAdmin(
+        Guid jobId,
+        [FromHeader(Name = "X-Internal-Api-Key")] string? apiKey,
+        [FromServices] IConfiguration configuration)
+    {
+        var expectedApiKey = configuration["InternalApiKey"];
+
+        if (string.IsNullOrWhiteSpace(expectedApiKey) ||
+            !string.Equals(apiKey, expectedApiKey, StringComparison.Ordinal))
+        {
+            return Unauthorized();
+        }
+
+        return await _jobService.DeleteAsync(jobId)
+            ? NoContent()
+            : NotFound(new { message = "Job listing not found." });
+    }
     [HttpGet("by-user/{userId:guid}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetByUser(Guid userId)

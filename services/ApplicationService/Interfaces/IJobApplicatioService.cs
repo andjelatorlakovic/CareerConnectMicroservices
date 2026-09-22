@@ -17,4 +17,5 @@ public interface IJobApplicationService
     Task<JobApplicationDto> GetByCandidateAsync(
         Guid candidateProfileId,
         Guid applicationId);
+    Task DeleteByJobAsync(Guid jobId);
 }

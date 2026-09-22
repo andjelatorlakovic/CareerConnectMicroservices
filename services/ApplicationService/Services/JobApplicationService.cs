@@ -113,6 +113,24 @@ public class JobApplicationService : IJobApplicationService
         return applications.Select(MapToDto).ToList();
     }
 
+    public async Task DeleteByJobAsync(Guid jobId)
+    {
+        var applications = await _context.JobApplications
+            .Where(application => application.JobListingId == jobId)
+            .ToListAsync();
+
+        if (applications.Count == 0)
+        {
+            return;
+        }
+
+        _context.JobApplications.RemoveRange(applications);
+        await _context.SaveChangesAsync();
+        await PublishRealtimeEventSafelyAsync(
+            "JobApplicationsChanged",
+            jobId.ToString());
+    }
+
     public async Task<List<JobApplicationDto>> GetByJobAsync(
         Guid companyProfileId,
         Guid jobId)

@@ -32,6 +32,22 @@ public class JobService : IJobService
         await PublishJobListingsChangedAsync();
         return true;
     }
+
+    public async Task<bool> DeleteAsync(Guid jobId)
+    {
+        var job = await _context.JobListings
+            .FirstOrDefaultAsync(job => job.Id == jobId);
+
+        if (job is null)
+        {
+            return false;
+        }
+
+        _context.JobListings.Remove(job);
+        await _context.SaveChangesAsync();
+        await PublishJobListingsChangedAsync();
+        return true;
+    }
     //Kreiranje oglasa 
     public async Task<JobListingDto> CreateAsync(Guid companyProfileId, CreateJobListingRequest request)
     {

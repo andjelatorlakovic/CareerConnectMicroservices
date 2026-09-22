@@ -17,6 +17,24 @@ public class QuizController : ControllerBase
         _quizService = quizService;
         _companyService = companyService;
     }
+    [HttpDelete("internal/jobs/{jobId:guid}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> DeleteForRemovedJob(
+        Guid jobId,
+        [FromHeader(Name = "X-Internal-Api-Key")] string? apiKey,
+        [FromServices] IConfiguration configuration)
+    {
+        var expectedApiKey = configuration["InternalApiKey"];
+
+        if (string.IsNullOrWhiteSpace(expectedApiKey) ||
+            !string.Equals(apiKey, expectedApiKey, StringComparison.Ordinal))
+        {
+            return Unauthorized();
+        }
+
+        await _quizService.DeleteByJobAsync(jobId);
+        return NoContent();
+    }
     [HttpGet("jobs/{jobId:guid}/questions")]
     public async Task<IActionResult> GetQuestions(Guid jobId)
     {

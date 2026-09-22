@@ -29,6 +29,13 @@ services:
       Jwt__Key: ${JWT_KEY}
       Jwt__Issuer: ${JWT_ISSUER}
       Jwt__Audience: ${JWT_AUDIENCE}
+      InternalApiKey: ${INTERNAL_API_KEY}
+      ServiceUrls__CompanyService: http://company-service:8080/
+      ServiceUrls__ApplicationService: http://application-service:8080/
+      ServiceUrls__QuizService: http://quiz-service:8080/
+      SeedAdmin__Enabled: "true"
+      SeedAdmin__Email: ${SEED_ADMIN_EMAIL}
+      SeedAdmin__Password: ${SEED_ADMIN_PASSWORD}
     depends_on:
       postgres:
         condition: service_healthy

@@ -24,6 +24,28 @@ builder.Services.AddDbContext<IdentityDbContext>(options =>
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAdminJobDeletionService, AdminJobDeletionService>();
+builder.Services.AddHttpClient<ICompanyJobService, CompanyJobService>(client =>
+{
+    client.BaseAddress = new Uri(
+        builder.Configuration["ServiceUrls:CompanyService"]
+        ?? throw new InvalidOperationException(
+            "Company service URL is not configured."));
+});
+builder.Services.AddHttpClient<IJobApplicationCleanupService, JobApplicationCleanupService>(client =>
+{
+    client.BaseAddress = new Uri(
+        builder.Configuration["ServiceUrls:ApplicationService"]
+        ?? throw new InvalidOperationException(
+            "Application service URL is not configured."));
+});
+builder.Services.AddHttpClient<IQuizCleanupService, QuizCleanupService>(client =>
+{
+    client.BaseAddress = new Uri(
+        builder.Configuration["ServiceUrls:QuizService"]
+        ?? throw new InvalidOperationException(
+            "Quiz service URL is not configured."));
+});
 
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException("JWT key is not configured.");
@@ -66,8 +88,12 @@ var app = builder.Build();
 if (app.Configuration.GetValue<bool>("Database:ApplyMigrations"))
 {
     using var scope = app.Services.CreateScope();
-    scope.ServiceProvider.GetRequiredService<IdentityDbContext>()
+    var services = scope.ServiceProvider;
+    services.GetRequiredService<IdentityDbContext>()
         .Database.Migrate();
+    await IdentityDatabaseSeeder.SeedAdminAsync(
+        services,
+        app.Configuration);
 }
 
 if (app.Environment.IsDevelopment())

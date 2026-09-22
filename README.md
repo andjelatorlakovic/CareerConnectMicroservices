@@ -105,7 +105,15 @@ JWT_KEY=YOUR_JWT_SECRET_WITH_AT_LEAST_32_CHARACTERS
 JWT_ISSUER=CareerConnect
 JWT_AUDIENCE=CareerConnect
 INTERNAL_API_KEY=YOUR_LOCAL_INTERNAL_API_KEY
+SEED_ADMIN_EMAIL=admin@careerconnect.local
+SEED_ADMIN_PASSWORD=YOUR_LOCAL_ADMIN_PASSWORD
 ```
+
+When Docker starts `IdentityService` for the first time, it creates the
+administrator from `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` if a user with
+that email does not already exist. The password is hashed before it is stored.
+Use these same values to sign in as the administrator. On later restarts, the
+existing administrator is kept unchanged.
 
 The frontend is available at `http://localhost:5173` and the Docker gateway at `http://localhost:5001/health`.
 

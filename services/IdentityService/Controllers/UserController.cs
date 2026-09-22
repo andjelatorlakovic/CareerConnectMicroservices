@@ -12,9 +12,13 @@ namespace IdentityService.Controllers;
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
-    public UserController(IUserService userService)
+    private readonly IAdminJobDeletionService _adminJobDeletionService;
+    public UserController(
+        IUserService userService,
+        IAdminJobDeletionService adminJobDeletionService)
     {
         _userService = userService;
+        _adminJobDeletionService = adminJobDeletionService;
     }
     private Guid GetUserId()
     {
@@ -113,6 +117,20 @@ public class UserController : ControllerBase
         catch (InvalidOperationException ex)
         {
             return NotFound(new { message = ex.Message });
+        }
+    }
+    [HttpDelete("{jobId:guid}/remove-job-listing")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> AdminRemoveJobListing(Guid jobId)
+    {
+        try
+        {
+            await _adminJobDeletionService.DeleteAsync(jobId);
+            return NoContent();
+        }
+        catch (InvalidOperationException exception)
+        {
+            return NotFound(new { message = exception.Message });
         }
     }
 }
