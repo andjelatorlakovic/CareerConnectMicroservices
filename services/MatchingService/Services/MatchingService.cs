@@ -71,7 +71,7 @@ public class MatchingService : IMatchingService
         return new MatchResultDto
         {
             JobId = job.Id,
-            Title = job.Title,
+            Tittle = job.Title,
             Location = job.Location,
             JobCategory = job.JobCategory,
             RequiredSkills = requiredSkills,

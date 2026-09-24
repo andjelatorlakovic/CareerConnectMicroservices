@@ -123,6 +123,11 @@ app.UseCors("Frontend");
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapGet("/health", () => Results.Ok(new
+{
+    status = "Matching service is running"
+}));
+
 app.MapControllers();
 
 app.Run();
